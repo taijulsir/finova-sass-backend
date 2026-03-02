@@ -40,6 +40,14 @@ export const PLATFORM_PERMISSIONS = {
   DESIGNATION_CREATE:  'DESIGNATION_CREATE',
   DESIGNATION_EDIT:    'DESIGNATION_EDIT',
   DESIGNATION_ARCHIVE: 'DESIGNATION_ARCHIVE',
+  // ── Coupons ───────────────────────────────────────────────────
+  COUPON_VIEW:   'COUPON_VIEW',
+  COUPON_CREATE: 'COUPON_CREATE',
+  COUPON_EDIT:   'COUPON_EDIT',
+  COUPON_DELETE: 'COUPON_DELETE',
+  // ── Feature Flags ─────────────────────────────────────────────
+  FEATURE_FLAG_VIEW:   'FEATURE_FLAG_VIEW',
+  FEATURE_FLAG_TOGGLE: 'FEATURE_FLAG_TOGGLE',
 } as const;
 
 /** Union type of all permission strings */
@@ -69,4 +77,10 @@ export const PERMISSION_MODULE_MAP: Record<PlatformPermissionKey, string> = {
   DESIGNATION_CREATE:  'DESIGNATION',
   DESIGNATION_EDIT:    'DESIGNATION',
   DESIGNATION_ARCHIVE: 'DESIGNATION',
+  COUPON_VIEW:         'COUPONS',
+  COUPON_CREATE:       'COUPONS',
+  COUPON_EDIT:         'COUPONS',
+  COUPON_DELETE:       'COUPONS',
+  FEATURE_FLAG_VIEW:   'FEATURE_FLAGS',
+  FEATURE_FLAG_TOGGLE: 'FEATURE_FLAGS',
 };

@@ -140,6 +140,11 @@ export class InvitationService {
       throw ApiError.forbidden('This invitation was sent to a different email');
     }
 
+    // Ensure invitation has an organizationId
+    if (!invitation.organizationId) {
+      throw ApiError.internal('Invalid invitation payload');
+    }
+
     // Check if already a member
     const existingMembership = await Membership.findOne({
       userId,

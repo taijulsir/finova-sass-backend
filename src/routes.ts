@@ -14,6 +14,8 @@ import { adminRoutes } from './modules/admin';
 import { planRoutes } from './modules/plan';
 import uploadRoutes from './modules/upload/upload.routes';
 import platformRbacRoutes from './modules/platform-rbac/platform-rbac.routes';
+import couponsRoutes from './modules/coupons/coupons.routes';
+import featureFlagsRoutes from './modules/feature-flags/feature-flags.routes';
 
 const router = Router();
 
@@ -40,5 +42,7 @@ router.use('/admin', adminRoutes);
 router.use('/plans', planRoutes);
 router.use('/upload', uploadRoutes);
 router.use('/platform-rbac', platformRbacRoutes);
+router.use('/coupons', couponsRoutes);
+router.use('/feature-flags', featureFlagsRoutes);
 
 export default router;
