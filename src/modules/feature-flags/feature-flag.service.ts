@@ -28,6 +28,16 @@ export class FeatureFlagService {
   }
 
   static async create(data: Partial<IFeatureFlag>) {
+    // Generate slug-like key from name if not provided
+    if (!data.key && data.name) {
+      const slug = data.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '_')
+        .replace(/(^_|_$)/g, '');
+      
+      // Ensure local uniqueness during generation if needed, though schema has unique index
+      data.key = slug;
+    }
     return await FeatureFlag.create(data);
   }
 
