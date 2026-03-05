@@ -17,6 +17,7 @@ import platformRbacRoutes from './modules/platform-rbac/platform-rbac.routes';
 import couponRoutes from './modules/coupons/coupon.routes';
 import { featureFlagRoutes } from './modules/feature-flags';
 import { supportTicketRoutes } from './modules/support';
+import { contactSubmissionRoutes } from './modules/crm';
 
 const router = Router();
 
@@ -45,6 +46,7 @@ router.use('/upload', uploadRoutes);
 router.use('/platform-rbac', platformRbacRoutes);
 router.use('/coupons', couponRoutes);
 router.use('/support', supportTicketRoutes);
+router.use('/crm', contactSubmissionRoutes);
 router.use('/feature-flags', featureFlagRoutes);
 
 export default router;

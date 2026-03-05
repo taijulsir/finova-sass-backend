@@ -18,6 +18,7 @@ export enum AdminModule {
   ANALYTICS = 'ANALYTICS',
   SETTINGS = 'SETTINGS',
   SUPPORT = 'SUPPORT',
+  CRM = 'CRM',
 }
 
 // Per-module actions an admin user can be granted
