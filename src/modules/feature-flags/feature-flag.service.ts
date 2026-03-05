@@ -14,13 +14,13 @@ export class FeatureFlagService {
       ];
     }
 
-    const [docs, total] = await Promise.all([
+    const [data, total] = await Promise.all([
       FeatureFlag.find(filter).sort({ createdAt: -1 }).skip(skip).limit(Number(limit)),
       FeatureFlag.countDocuments(filter),
     ]);
 
     return {
-      docs,
+      data,
       total,
       page: Number(page),
       totalPages: Math.ceil(total / Number(limit)),
@@ -30,12 +30,17 @@ export class FeatureFlagService {
   static async create(data: Partial<IFeatureFlag>) {
     // Generate slug-like key from name if not provided
     if (!data.key && data.name) {
-      const slug = data.name
+      let slug = data.name
         .toLowerCase()
+        .trim()
         .replace(/[^a-z0-9]+/g, '_')
-        .replace(/(^_|_$)/g, '');
+        .replace(/(^_+|_+$)/g, '');
       
-      // Ensure local uniqueness during generation if needed, though schema has unique index
+      // Basic collision handling
+      const existing = await FeatureFlag.findOne({ key: slug });
+      if (existing) {
+        slug = `${slug}_${Date.now().toString().slice(-4)}`;
+      }
       data.key = slug;
     }
     return await FeatureFlag.create(data);
