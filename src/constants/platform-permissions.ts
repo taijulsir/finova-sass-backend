@@ -48,6 +48,10 @@ export const PLATFORM_PERMISSIONS = {
   // ── Feature Flags ─────────────────────────────────────────────
   FEATURE_FLAG_VIEW:   'FEATURE_FLAG_VIEW',
   FEATURE_FLAG_TOGGLE: 'FEATURE_FLAG_TOGGLE',
+  // ── Billing Events ──────────────────────────────────────────
+  BILLING_EVENT_VIEW: 'BILLING_EVENT_VIEW',
+  // ── Email Logs ──────────────────────────────────────────────
+  EMAIL_LOG_VIEW: 'EMAIL_LOG_VIEW',
 } as const;
 
 /** Union type of all permission strings */
@@ -83,4 +87,6 @@ export const PERMISSION_MODULE_MAP: Record<PlatformPermissionKey, string> = {
   COUPON_DELETE:       'COUPONS',
   FEATURE_FLAG_VIEW:   'FEATURE_FLAGS',
   FEATURE_FLAG_TOGGLE: 'FEATURE_FLAGS',
+  BILLING_EVENT_VIEW:  'FINANCE',
+  EMAIL_LOG_VIEW:      'OPERATIONS',
 };
