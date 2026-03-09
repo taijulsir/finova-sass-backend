@@ -19,6 +19,7 @@ import { featureFlagRoutes } from './modules/feature-flags';
 import { supportTicketRoutes } from './modules/support';
 import { contactSubmissionRoutes } from './modules/crm';
 import emailLogRoutes from './modules/email/email-log.routes';
+import accountRoutes from './modules/account/account.routes';
 
 const router = Router();
 
@@ -50,5 +51,6 @@ router.use('/support', supportTicketRoutes);
 router.use('/crm', contactSubmissionRoutes);
 router.use('/feature-flags', featureFlagRoutes);
 router.use('/admin/email-logs', emailLogRoutes);
+router.use('/account', accountRoutes);
 
 export default router;

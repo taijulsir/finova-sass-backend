@@ -4,6 +4,8 @@ import { AuthenticatedRequest } from '../../types/interfaces';
 import { sendSuccess } from '../../utils/response';
 import { HttpStatus, ApiError } from '../../utils/api-error';
 import { env } from '../../config/env';
+import { AccountService } from '../account/account.service';
+import crypto from 'crypto';
 
 // Cookie options helper
 const getCookieOptions = () => ({
@@ -48,6 +50,14 @@ export class AuthController {
 
       // Set refresh token in HTTP-only cookie
       res.cookie('refreshToken', tokens.refreshToken, getCookieOptions());
+
+      // Session tracking — fire-and-forget (don't let tracking errors break login)
+      const sessionId = crypto.randomUUID();
+      const userAgent = req.headers['user-agent'] ?? '';
+      const ipAddress = (req.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ?? req.ip ?? '';
+      res.cookie('sessionId', sessionId, { ...getCookieOptions(), maxAge: 30 * 24 * 60 * 60 * 1000 });
+      AccountService.createSession(user._id.toString(), sessionId, userAgent, ipAddress).catch(() => {});
+      AccountService.recordLoginActivity(user._id.toString(), userAgent, ipAddress, 'success').catch(() => {});
 
       sendSuccess(
         res,
@@ -97,8 +107,17 @@ export class AuthController {
       // Clear refresh token from DB
       await AuthService.logout(req.user!.userId);
 
-      // Clear cookie
+      // Delete session record
+      const sessionId = req.cookies?.sessionId ?? (req.headers['x-session-id'] as string);
+      if (sessionId) AccountService.deleteSession(sessionId).catch(() => {});
+
+      // Clear cookies
       res.clearCookie('refreshToken', {
+        httpOnly: true,
+        secure: env.nodeEnv === 'production',
+        sameSite: 'strict',
+      });
+      res.clearCookie('sessionId', {
         httpOnly: true,
         secure: env.nodeEnv === 'production',
         sameSite: 'strict',
