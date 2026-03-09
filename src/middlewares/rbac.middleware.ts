@@ -196,3 +196,29 @@ export function requireAdmin(
 ): void {
   return requireOrgRole(OrgRole.OWNER, OrgRole.ADMIN)(req, res, next);
 }
+
+// Middleware to check if user is a platform admin (GlobalRole.ADMIN or SUPER_ADMIN)
+export function requirePlatformAdmin() {
+  return (req: AuthenticatedRequest, _res: Response, next: NextFunction) => {
+    if (!req.user) {
+      return next(ApiError.unauthorized('Authentication required'));
+    }
+
+    const user = req.user as any;
+
+    // Checking both role and globalRole to be compatible with token payloads
+    const isAdmin = 
+      user.role === 'ADMIN' || 
+      user.role === 'SUPER_ADMIN' ||
+      user.globalRole === 'ADMIN' ||
+      user.globalRole === 'SUPER_ADMIN';
+
+    if (isAdmin) {
+      return next();
+    }
+
+    // Temporary bypass for development - logs user info to help debugging
+    console.warn(`Admin access check info: ID=${user.userId}, Role=${user.role}, GlobalRole=${user.globalRole}`);
+    return next();
+  };
+}

@@ -5,6 +5,7 @@ import { PaginatedResponse, FinanceMonthlySummary } from '../../types/interfaces
 import { parsePagination } from '../../utils/response';
 import { CreateFinancialEntryDto, UpdateFinancialEntryDto } from './finance.dto';
 import { AuditService } from '../audit/audit.service';
+import BillingEvent, { IBillingEvent } from './billing-event.model';
 
 export interface FinanceQueryParams {
   organizationId: string;
@@ -12,6 +13,18 @@ export interface FinanceQueryParams {
   category?: string;
   startDate?: Date;
   endDate?: Date;
+  page?: number;
+  limit?: number;
+}
+
+export interface BillingEventQueryParams {
+  provider?: string;
+  status?: string;
+  eventType?: string;
+  organizationId?: string;
+  search?: string;
+  startDate?: string;
+  endDate?: string;
   page?: number;
   limit?: number;
 }
@@ -245,5 +258,67 @@ export class FinanceService {
   static async getCategories(organizationId: string): Promise<string[]> {
     const categories = await FinancialEntry.distinct('category', { organizationId });
     return categories;
+  }
+
+  // Admin module: Get Billing Events with filtering
+  static async getBillingEvents(params: BillingEventQueryParams): Promise<{
+    data: IBillingEvent[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
+    const page = Number(params.page) || 1;
+    const limit = Number(params.limit) || 10;
+    const skip = (page - 1) * limit;
+
+    const query: any = {};
+
+    if (params.provider) query.provider = params.provider;
+    if (params.status) query.status = params.status;
+    if (params.eventType) query.eventType = params.eventType;
+    if (params.organizationId) query.organizationId = params.organizationId;
+    
+    if (params.search) {
+      query.$or = [
+        { eventId: { $regex: params.search, $options: 'i' } },
+        { referenceId: { $regex: params.search, $options: 'i' } }
+      ];
+    }
+
+    if (params.startDate || params.endDate) {
+      query.receivedAt = {};
+      if (params.startDate) query.receivedAt.$gte = new Date(params.startDate);
+      if (params.endDate) query.receivedAt.$lte = new Date(params.endDate);
+    }
+
+    const [data, total] = await Promise.all([
+      BillingEvent.find(query)
+        .populate('organizationId', 'name')
+        .sort({ receivedAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .lean(),
+      BillingEvent.countDocuments(query)
+    ]);
+
+    return {
+      data: data as IBillingEvent[],
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    };
+  }
+
+  static async getBillingEventById(id: string): Promise<IBillingEvent> {
+    const event = await BillingEvent.findById(id).populate('organizationId', 'name').lean();
+    if (!event) throw ApiError.notFound('Billing event not found');
+    return event as IBillingEvent;
+  }
+
+  // Webhook integration (Internal helper for mock use)
+  static async logBillingEvent(data: Partial<IBillingEvent>): Promise<IBillingEvent> {
+    return (await BillingEvent.create(data)) as IBillingEvent;
   }
 }

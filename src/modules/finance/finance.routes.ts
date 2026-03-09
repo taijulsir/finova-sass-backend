@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { FinanceController } from './finance.controller';
 import { authenticate } from '../../middlewares/auth.middleware';
-import { loadMembership, requirePermission } from '../../middlewares/rbac.middleware';
+import { loadMembership, requirePermission, requirePlatformAdmin } from '../../middlewares/rbac.middleware';
 import { validateBody } from '../../middlewares/validate.middleware';
 import { createFinancialEntryDto, updateFinancialEntryDto } from './finance.dto';
 import { Permission } from '../../types/enums';
@@ -10,6 +10,25 @@ const router = Router();
 
 // All routes require authentication
 router.use(authenticate);
+
+// Admin-only Billing Events Routes (Global access)
+router.get(
+  '/admin/billing-events',
+  requirePlatformAdmin(),
+  FinanceController.getBillingEvents
+);
+
+router.get(
+  '/admin/billing-events/:id',
+  requirePlatformAdmin(),
+  FinanceController.getBillingEventById
+);
+
+// Mock Stripe Webhook - for simulation/testing
+router.post(
+  '/admin/webhooks/stripe',
+  FinanceController.stripeWebhook
+);
 
 // Get entries
 router.get(

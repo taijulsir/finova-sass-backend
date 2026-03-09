@@ -159,4 +159,80 @@ export class FinanceController {
       next(error);
     }
   }
+
+  // Admin module: Get Billing Events
+  static async getBillingEvents(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { provider, status, eventType, organizationId, search, startDate, endDate, page, limit } = req.query as any;
+
+      const result = await FinanceService.getBillingEvents({
+        provider,
+        status,
+        eventType,
+        organizationId,
+        search,
+        startDate,
+        endDate,
+        page: page ? parseInt(page) : undefined,
+        limit: limit ? parseInt(limit) : undefined,
+      });
+
+      sendSuccess(res, result);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // Admin module: Get Billing Event Details
+  static async getBillingEventById(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { id } = req.params;
+      const event = await FinanceService.getBillingEventById(id);
+      sendSuccess(res, event);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  // Mock Stripe Webhook Handler
+  static async stripeWebhook(
+    req: AuthenticatedRequest,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const payload = req.body;
+      const stripeEventId = payload.id;
+      const eventType = payload.type;
+      const referenceId = payload.data?.object?.id;
+
+      // Log the event as received
+      const billingEvent = await FinanceService.logBillingEvent({
+        eventId: stripeEventId || `st_${Date.now()}`,
+        provider: 'stripe',
+        eventType,
+        referenceId,
+        status: 'received',
+        payload,
+        receivedAt: new Date(),
+      });
+
+      // Update processing status to simulation
+      billingEvent.status = 'processed';
+      billingEvent.processedAt = new Date();
+      await billingEvent.save();
+
+      sendSuccess(res, { received: true, eventId: billingEvent.eventId }, 'Webhook processed successfully');
+    } catch (error) {
+      next(error);
+    }
+  }
 }
